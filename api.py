@@ -60,7 +60,7 @@ print(template.format(city, data['main']['temp']))
 
 
 
-# Implementing the task
+# Implementing the task 1
 # Finding information about numbers from web resource numbersapi.com
 # Reading numbers from the file and writing them into the list
 n = []
@@ -105,3 +105,61 @@ content = '\n'.join(results)
 # Writing content in the new file
 with open('test_numbers_results.txt', 'w') as w:
     w.write(content)
+
+    
+
+
+# Implementing task 2
+# Obtaining information about art workers from the web resource artsy.net
+# As inputs there will be id of each art worker
+# We need to get names of each worker and date of birth
+# As output - show the names of workers sorted by dates of birth
+# If for some of them the date is similar - sort these ones by alphabetic order
+
+# Getting a token from web resource artsy.net with api
+client_id = 'c106a77ee4dda462f463'
+client_secret = '3aa6adfa54057aa5c4341152482a97ee'
+
+# Creating a request
+request = requests.post("https://api.artsy.net/api/tokens/xapp_token",
+                  data={
+                      "client_id": client_id,
+                      "client_secret": client_secret
+                  })
+
+# Getting the dictionary from json data with 'json' library
+data = json.loads(request.text)
+
+# Obtaining the token
+token = data["token"]
+
+# Creating header with our token
+headers = {"X-Xapp-Token": token}
+
+# Reading the id of art workers and writing the results into the list
+with open("test_dataset.txt") as f:
+    results = []
+    for line in f:
+        line = line.rstrip()  # Deleting any symbols at the end of the line
+        # Creating a template for the request
+        template = 'https://api.artsy.net/api/artists/{}'
+        # Creating a request with header
+        respond = requests.get(template.format(line), headers=headers)
+        # Getting the results in 'utf-8' coding
+        respond.encoding = 'utf-8'
+        # Getting the dictionary from json data with 'json' library
+        data = json.loads(respond.text)
+        # Adding all data in the list
+        results.append(data)
+
+# Sorting results with method 'sorted' for list
+# As an argument for this method we use 'key'
+# As an value for this argument we use results of 'lambda' function
+# Results of 'lambda' function in our case are birthdays and then names
+# So, firstly method 'sorted' will sort by birthday
+# And if there is the same value of birthday it will sort by name
+sorted_results = sorted(results, key=lambda artist: (int(artist['birthday']), artist['name']))
+
+# Showing the final results
+for item in sorted_results:
+    print(item['name']) 
